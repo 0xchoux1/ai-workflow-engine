@@ -1,0 +1,117 @@
+{
+  "name": "Google Drive Auto Upload",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "create",
+        "name": "={{ $now.format('yyyy-MM-dd') }}_upload",
+        "options": {}
+      },
+      "id": "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Google Drive - Create Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1",
+          "name": "Google Drive - My Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": "/tmp/upload/sample.txt",
+        "options": {}
+      },
+      "id": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "Read Binary File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "upload",
+        "name": "=uploaded_{{ $now.format('yyyyMMdd_HHmmss') }}.txt",
+        "driveId": {
+          "mode": "list",
+          "value": "myDrive"
+        },
+        "folderId": {
+          "mode": "id",
+          "value": "={{ $node['Google Drive - Create Folder'].json.id }}"
+        },
+        "options": {}
+      },
+      "id": "4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Google Drive - Upload File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [850, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1",
+          "name": "Google Drive - My Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Create Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Create Folder": {
+      "main": [
+        [
+          {
+            "node": "Read Binary File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary File": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Upload File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-02T00:00:00.000Z",
+  "versionId": "1"
+}
+

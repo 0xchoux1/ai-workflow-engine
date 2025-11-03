@@ -1,0 +1,50 @@
+# 環境変数ファイル（機密情報を含む）
+.env
+.env.local
+.env.*.local
+
+# アップロード用ディレクトリ（テストファイルを除外）
+upload/*
+!upload/.gitkeep
+!upload/README.md
+
+# n8nデータ（Dockerボリューム）
+n8n_data/
+
+# Difyデータ
+dify_app_storage/
+
+# データベースデータ
+postgres_data/
+redis_data/
+weaviate_data/
+
+# ログファイル
+*.log
+logs/
+
+# OSファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 一時ファイル
+tmp/
+temp/
+*.tmp
+
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/

@@ -1,0 +1,177 @@
+{
+  "name": "Google Drive Scheduled Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "create",
+        "name": "=Backup_{{ $now.format('yyyy-MM-dd') }}",
+        "options": {}
+      },
+      "id": "2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Google Drive - Create Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1",
+          "name": "Google Drive - My Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "fromPath",
+        "path": "/tmp/upload",
+        "options": {
+          "allFiles": true
+        }
+      },
+      "id": "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "Read Binary Files",
+      "type": "n8n-nodes-base.readBinaryFiles",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "upload",
+        "binaryData": true,
+        "name": "={{ $binary.data.fileName }}",
+        "parents": {
+          "parent": "={{ $node['Google Drive - Create Folder'].json.id }}"
+        },
+        "options": {}
+      },
+      "id": "4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Google Drive - Upload File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1050, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1",
+          "name": "Google Drive - My Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "=✅ バックアップ完了\n\n📁 フォルダ名: {{ $node['Google Drive - Create Folder'].json.name }}\n📄 ファイル数: {{ $node['Split In Batches'].context.noItemsLeft ? $node['Split In Batches'].context.currentRunIndex : 'processing...' }}\n🕒 実行時刻: {{ $now.format('yyyy-MM-dd HH:mm:ss') }}\n🔗 リンク: https://drive.google.com/drive/folders/{{ $node['Google Drive - Create Folder'].json.id }}",
+        "options": {}
+      },
+      "id": "6f7a8b9c-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Set Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Create Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Create Folder": {
+      "main": [
+        [
+          {
+            "node": "Read Binary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary Files": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Upload File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Upload File": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-11-02T00:00:00.000Z",
+      "updatedAt": "2025-11-02T00:00:00.000Z",
+      "id": "1",
+      "name": "backup"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-02T00:00:00.000Z",
+  "versionId": "1"
+}
+
